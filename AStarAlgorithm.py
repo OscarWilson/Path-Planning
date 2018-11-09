@@ -3,7 +3,6 @@ from tkinter import *
 import time
 import TestGrids
 import heapq
-#Dev Branch Change
 
 
 globalGridCapture = 0 
@@ -43,9 +42,13 @@ class AStarResources():
             maze.append(row)
         return maze
     
-    def Get_Neigbours():
-        pass
-
+    def Get_Neigbours(cell):
+        neighbourNorth = Get_Cell(x,y-1)
+        neighbourEast = Get_Cell(x+1,y)
+        neighbourSouth = Get_Cell(x,y+1)
+        neighbourWest = Get_Cell(x-1,y)
+        Neighbours = [neighbourNorth,neighbourEast,neighbourWest,neighbourSouth]
+        return Neighbours
     def Get_Heuristics(self,cell):
         
         xDifference = abs(cell.x - self.startingCell.x)
@@ -59,31 +62,46 @@ class AStarResources():
 
         return distance 
             
-        
-       
 
     def Get_Cell(self, x, y):
         #returns a specified cell as its object
         #The reference to the cell memory is returned, remember in OOP
         #this means that after x = get_cell(x,y)changing x will change the cell
         return self.cellMatrix[y][x]
+    
     def Update_Cell(self,Cell,Parent):
-        # cell.g = origin.g + 10
-        # cell.h = get heuristic (cell)
-        # cell.f = sum of
-        # cell.parent = parent
+         cell.g = Parent.g + 10
+         cell.h = self.Get_Heuristics(Cell)
+         cell.f =  cell.g + cell.h
+         cell.parent = Parent
     
         pass
     def Get_Path(self):
-        #get end path 
+        #get end path
+        print("GETTING PATH")
+        #mark all pathpoints as cell.value = GUI_Image_Path
         pass
+    
+    def Find_Minimum(self,List):
+      #include the design for this recursive function 
+        if len(List)==2:
+            if List[0].f < List[1].f:
+                return List[0]
+            else:
+                return List[1]
+        else:
+            
+            testvalue = self.Find_Minimum(List[1:])
+            if List[0].f < testvalue:
+                return List[0]
+            else:
+                return testvalue
+    
 
     def Select_New_Cell(self):
-        #ngl i have no idea why i created this. i obviously had thought of something at the time
-        #I think this is the function that gets a new cell with the lowest f from open 
-        pass
+        minimumCell = Find_Minimum(self.openList)
+        return minimumCell
         
-
     def Solve(self):
         Origin = self.startingCell
         while found == False:
@@ -121,7 +139,7 @@ class AStarResources():
 
 def Run_AStar_Tests():
     pass
-
+    
         
 def Move(Matrix,x,y):
 
@@ -337,5 +355,4 @@ main()
 
 
                     
-
 
