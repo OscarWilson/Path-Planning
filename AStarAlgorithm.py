@@ -21,7 +21,7 @@ class Cell():
 
 class AStarResources():
     def __init__(self,Grid,method):
-        
+        self.listOpen = []
         self.Values = Grid
         self.cellMatrix = self.Initiate_Maze()
         self.startingCell = self.Get_Cell(1,1)
@@ -38,15 +38,15 @@ class AStarResources():
             for x in range(len(self.Values[y])):
                 newCell = Cell(x,y)#somebody check if I got the x and y the right way round
                 newCell.value = self.Values[y][x]
-                row.append(NewCell)
+                row.append(newCell)
             maze.append(row)
         return maze
     
-    def Get_Neigbours(cell):
-        neighbourNorth = Get_Cell(x,y-1)
-        neighbourEast = Get_Cell(x+1,y)
-        neighbourSouth = Get_Cell(x,y+1)
-        neighbourWest = Get_Cell(x-1,y)
+    def Get_Neighbours(self,cell):
+        neighbourNorth = self.Get_Cell(cell.x,((cell.y)-1))
+        neighbourEast = self.Get_Cell(((cell.x)+1),cell.y)
+        neighbourSouth = self.Get_Cell(cell.x,((cell.y)+1))
+        neighbourWest = self.Get_Cell(((cell.x)-1),cell.y)
         Neighbours = [neighbourNorth,neighbourEast,neighbourWest,neighbourSouth]
         return Neighbours
     def Get_Heuristics(self,cell):
@@ -69,13 +69,12 @@ class AStarResources():
         #this means that after x = get_cell(x,y)changing x will change the cell
         return self.cellMatrix[y][x]
     
-    def Update_Cell(self,Cell,Parent):
+    def Update_Cell(self,cell,Parent):
          cell.g = Parent.g + 10
          cell.h = self.Get_Heuristics(Cell)
          cell.f =  cell.g + cell.h
          cell.parent = Parent
     
-        pass
     def Get_Path(self):
         #get end path
         print("GETTING PATH")
@@ -104,10 +103,12 @@ class AStarResources():
         
     def Solve(self):
         Origin = self.startingCell
+        found = False
         while found == False:
             if Origin == self.endingCell:
                 found = True
                 self.Get_Path()
+                return self.cellMatrix
                 break
             Origin.visited = True
             Origin.value = 3 #in order for the GUI to see a value is visited we must change its value to 3
@@ -117,16 +118,16 @@ class AStarResources():
             #3 = Visited
             #4 = Edge
             #Since we actually have attributes for the finish and whether a cell is visited, these values mainly for the use of the GUI 
-            neighbours = Get_Neighbours(Origin)
+            neighbours = self.Get_Neighbours(Origin)
             for Cell in neighbours:
-                print("Processed Cell: ", Cell.x , Cell.y)
                 if Cell.value == 0 and Cell.visited == False: #No point processing cells that are walls since we cant move to them anyway.
                     #By doing this we increase efficiency
-                    Update_Cell(Cell,Origin) #sends target 'neighbour' cell and also orgin cell to be set as its parent
+                    self.Update_Cell(Cell,Origin) #sends target 'neighbour' cell and also orgin cell to be set as its parent
                     self.listOpen.append(Cell)
-                    print("Processed Cell: ", Cell.x ,",", Cell.y)
                     print("Appended Cell ", Cell.x, "," , Cell.y, "to the open list")
             print("Open List now contains objects", self.listOpen)
+
+            Origin = self.Select_New_Cell()
             
             #Now after calculating heuristic we must choose the cell with the lowest f value as the new origin
                     
@@ -266,7 +267,8 @@ def main():
         if choice == 1:
             print("Initialising AStar")
             AStar = AStarResources(Grid,method)
-            Path,Grid = Astar.Solve()
+           # Path,Grid = Astar.Solve()
+            Grid = AStar.Solve()
 
             
         elif choice == 2:
@@ -355,4 +357,3 @@ main()
 
 
                     
-
