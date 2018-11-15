@@ -26,6 +26,7 @@ class Cell():
             print("This cell has been visited/processed")
         else:
             print("This cell has not been visited yet")
+        print(self.parent)
 class AStarResources():
     def __init__(self,Grid,method):
         self.listOpen = []
@@ -92,13 +93,31 @@ class AStarResources():
         #this means that after x = get_cell(x,y)changing x will change the cell
         return self.cellMatrix[y][x]
     def Update_Cell(self,cell,Parent):
-         cell.g = Parent.g + 0 #0.7
+         cell.g = Parent.g + 0.8 #0.7
          cell.h = self.Get_Heuristics(cell)
          cell.f =  cell.g + cell.h
          cell.parent = Parent
-    def Get_Path(self):
+    def Get_Path(self,rootCell):
+        print("---------------£--------------")
+        rootCell.Display_Details()
+        print("---------------^--------------")
+        
+        while rootCell.parent != None:
+        
+            if rootCell.value == 2:
+                print("Starting at end")
+            else:
+                print("Changing to 5")
+                rootCell.value = 6
+                
+            rootCell = rootCell.parent 
+            
+        
+       
+        
         #get end path
         print("GETTING PATH")
+        
         #mark all pathpoints as cell.value = GUI_Image_Path
         pass
     def Find_Minimum(self,List):
@@ -136,12 +155,23 @@ class AStarResources():
         while found == False:          
             if Origin == self.endingCell:
                 found = True
-                self.Get_Path()
+                print(Origin)
+                Origin.Display_Details()
+                print("------------------------------")
+               
+                print(Previous)
+                Previous.Display_Details()
+                print("------------------------------")
+                
+                self.Update_Cell(Origin,Previous)
+                print(Origin)
+                Origin.Display_Details()
+                print("------------------------------")
+                self.Get_Path(Origin)
                 return self.cellMatrix
                 break
                 print("End was found")
             neighbours = self.Get_Neighbours(Origin)
-            print(self.cellMatrix)
             for Cell in neighbours:
                 if Cell == self.endingCell:
                     Cell.f = 0
@@ -150,19 +180,17 @@ class AStarResources():
                     
                     if self.Validate_Cell(Cell) == True: #No point processing cells that are walls since we cant move to them anyway.
                         #By doing this we increase efficiency
-                        print("Updating neighbours")
                         self.Update_Cell(Cell,Origin) #sends target 'neighbour' cell and also origin cell to be set as its parent
                         self.listOpen.append(Cell)
                         Cell.value = 5
                     else:
                         pass
-            print("ORIGIN: ", Origin.Display_Details)
-            print(self.listOpen)
             #issue to talk about - the program kept selecting the starting cell as the new origin every time becuase we forgot to remove it from the open
             #list. Since the cost function did not have any biases towards weight over cost. It chose the same cell every time           
             Origin.visited = True
             self.listOpen.remove(Origin)
             Origin.value = 3 #in order for the GUI to see a value is visited we must change its value to 3
+            Previous = Origin
             Origin = self.Select_New_Cell()
             #RETURN THE FINISHED PATH AND THE GRID SO IT CAN BE DISPLAYED!!!!!
         
@@ -240,6 +268,9 @@ def Display_Result(Grid):
                 label = Label(root, image=edge , width = imagewidth , height = imageheight).grid(row = y , column = x)
             elif Grid[y][x] == 5:
                 label = Label(root, image=processed , width = imagewidth , height = imageheight).grid(row = y , column = x)
+            elif Grid[y][x] == 6:
+                label = Label(root, image=path , width = imagewidth , height = imageheight).grid(row = y , column = x)
+                
     b = Button(root, text = "Next" , command = lambda: Close_Window(root)).grid(row = round((len(Grid[1])/2))  , column = (len(Grid)+1))
     root.lift()
     root.attributes('-topmost', True)
@@ -248,7 +279,7 @@ def Display_Result(Grid):
 def main():
     print("Starting")
     gridStore = TestGrids.ImportMatrices()
-    Grid = gridStore.TestMaze1
+    Grid = gridStore.TestMaze4
     userInput = None
     while ValidateInteger(userInput,1,2):
         print()
