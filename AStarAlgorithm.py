@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import *
 import time
@@ -40,6 +41,7 @@ class AStarResources():
             if self.Validate_Cell(self.Get_Cell(userStartx , userStarty)) == True:
                 validSelection = True
                 self.startingCell = self.Get_Cell(userStartx,userStarty)
+                self.startingCell.value = 10 
             else:   
                 print("The chosen starting cell is a wall and is invalid as a starting point")
                 print("Please choose another")
@@ -57,7 +59,9 @@ class AStarResources():
                 print("Please choose another") 
         self.listOpen.append(self.startingCell)
         self.heuristicMethod = method
-        self.Values[self.endingCell.y][self.endingCell.x] = 2 
+        self.Values[self.endingCell.y][self.endingCell.x] = 2
+        self.Values[self.startingCell.y][self.startingCell.x] = 10
+        
         Display_Result(self.Values)            
     def Initiate_Maze(self):
         maze = []
@@ -93,33 +97,31 @@ class AStarResources():
         #this means that after x = get_cell(x,y)changing x will change the cell
         return self.cellMatrix[y][x]
     def Update_Cell(self,cell,Parent):
-         cell.g = Parent.g + 0.8 #0.7
+         cell.g = Parent.g + 0.6 #0.7
          cell.h = self.Get_Heuristics(cell)
          cell.f =  cell.g + cell.h
          cell.parent = Parent
     def Get_Path(self,rootCell):
-        print("---------------£--------------")
-        rootCell.Display_Details()
-        print("---------------^--------------")
-        
         while rootCell.parent != None:
-        
             if rootCell.value == 2:
-                print("Starting at end")
+                print("Starting at root cell ", rootCell.x ,"," , rootCell.y)
             else:
-                print("Changing to 5")
-                rootCell.value = 6
-                
-            rootCell = rootCell.parent 
+                if rootCell.x > rootCell.parent.x and rootCell.y == rootCell.parent.y:
+                    rootCell.value = 6
+                elif rootCell.x == rootCell.parent.x and rootCell.y > rootCell.parent.y:
+                    rootCell.value = 7
+                elif rootCell.x < rootCell.parent.x and rootCell.y == rootCell.parent.y:
+                    rootCell.value = 8
+                elif rootCell.x == rootCell.parent.x and rootCell.y < rootCell.parent.y:
+                    rootCell.value = 9
+                    
+            prevCell = rootCell
+            rootCell = rootCell.parent
+
+
+
             
-        
-       
-        
         #get end path
-        print("GETTING PATH")
-        
-        #mark all pathpoints as cell.value = GUI_Image_Path
-        pass
     def Find_Minimum(self,List):
       #include the design for this recursive function
         if len(List)==1:
@@ -135,7 +137,7 @@ class AStarResources():
                 return List[0]
             else:
                 return testvalue
-    def Validate_Cell(self,cell): # WHEN A STARTING POSITION IS ENTERED ABOVE THE LIMIT IT IS NOT PICKING IT UP  TO BE FIXED !!!
+    def Validate_Cell(self,cell): # WHEN A STARTING POSITION IS ENTERED ABOVE THE LIMIT IT IS NOT PICKING IT UP TO BE FIXED !!!
         if cell.x > len(self.cellMatrix[1]):
             return False
         elif cell.y > len(self.cellMatrix):
@@ -155,18 +157,7 @@ class AStarResources():
         while found == False:          
             if Origin == self.endingCell:
                 found = True
-                print(Origin)
-                Origin.Display_Details()
-                print("------------------------------")
-               
-                print(Previous)
-                Previous.Display_Details()
-                print("------------------------------")
-                
                 self.Update_Cell(Origin,Previous)
-                print(Origin)
-                Origin.Display_Details()
-                print("------------------------------")
                 self.Get_Path(Origin)
                 return self.cellMatrix
                 break
@@ -244,8 +235,8 @@ def ValidateInteger(userInput , intMin , intMax):
 def Close_Window(root):
     root.destroy()
 def Display_Result(Grid):
-    imageheight = 25
-    imagewidth = 25 
+    imageheight = 11
+    imagewidth = 11
     root = Tk()
     wall = tk.PhotoImage(file = "GUI_Image_Wall.gif")
     space = tk.PhotoImage(file = "GUI_Image_Space.gif")
@@ -253,7 +244,11 @@ def Display_Result(Grid):
     visited = tk.PhotoImage(file = "GUI_Image_Visited.gif")
     finish = tk.PhotoImage(file = "GUI_Image_Finish.gif")
     processed = tk.PhotoImage(file = "GUI_Image_Processed.gif")
-    path = tk.PhotoImage(file = "GUI_Image_Path.gif")  
+    pathLeft = tk.PhotoImage(file = "GUI_Image_Path_Left.gif")
+    pathRight = tk.PhotoImage(file = "GUI_Image_Path_Right.gif")
+    pathUp = tk.PhotoImage(file = "GUI_Image_Path_Up.gif")
+    pathDown = tk.PhotoImage(file = "GUI_Image_Path_Down.gif")
+    Start = tk.PhotoImage(file = "Untitled-3.PSD")
     for y in range(len(Grid)):
         for x in range(len(Grid[y])):
             if Grid[y][x] == 0:
@@ -269,17 +264,27 @@ def Display_Result(Grid):
             elif Grid[y][x] == 5:
                 label = Label(root, image=processed , width = imagewidth , height = imageheight).grid(row = y , column = x)
             elif Grid[y][x] == 6:
-                label = Label(root, image=path , width = imagewidth , height = imageheight).grid(row = y , column = x)
+                label = Label(root, image=pathRight , width = imagewidth , height = imageheight).grid(row = y , column = x)
+            elif Grid[y][x] == 7:
+                label = Label(root, image=pathDown , width = imagewidth , height = imageheight).grid(row = y , column = x)
+            elif Grid[y][x] == 8:
+                label = Label(root, image=pathLeft , width = imagewidth , height = imageheight).grid(row = y , column = x)
+            elif Grid[y][x] == 9:
+                label = Label(root, image=pathUp , width = imagewidth , height = imageheight).grid(row = y , column = x)
+            elif Grid[y][x] == 10:
+                label = Label(root, image=Start, width = imagewidth , height = imageheight).grid(row = y , column = x)
                 
-    b = Button(root, text = "Next" , command = lambda: Close_Window(root)).grid(row = round((len(Grid[1])/2))  , column = (len(Grid)+1))
+                
+    b = Button(root, text = "Next" , command = lambda: Close_Window(root),height= 1 ,width = 1).grid(row = round((len(Grid)+1))  , column = (len(Grid)+1))
     root.lift()
     root.attributes('-topmost', True)
     root.attributes('-topmost', False)
-    root.mainloop()        
+    root.mainloop()
+    
 def main():
     print("Starting")
     gridStore = TestGrids.ImportMatrices()
-    Grid = gridStore.TestMaze4
+    Grid = gridStore.TestMaze3
     userInput = None
     while ValidateInteger(userInput,1,2):
         print()
@@ -329,6 +334,8 @@ def main():
     #---Breadth First---#
     elif userInput == 3:
         pass
+    
+        
     
 
 
