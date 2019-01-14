@@ -5,6 +5,11 @@ import time
 import TestGrids
 import heapq
 
+#improvements for evalutation
+
+#When using the inheritance, there is a lot of redundant data which is created and not used in the bfs
+# 
+
 #State/Value Guide
 #0 = Space
 #1 = Wall
@@ -42,6 +47,7 @@ class Cell():
         else:
             print("This cell has not been visited yet")
         print(self.parent)
+       
 class AStarResources():
     def __init__(self,Grid,method):
         self.listOpen = []
@@ -78,7 +84,7 @@ class AStarResources():
         self.Values[self.startingCell.y][self.startingCell.x] = 10
         #the state for the ending cell is 10 
         
-        Display_Result(self.Values)            
+        #Display_Result(self.Values)            
     def Initiate_Maze(self):
         #Convert values into a cell matrix
         maze = []
@@ -226,16 +232,21 @@ class AStarResources():
             Previous = Origin
             Origin = self.Select_New_Cell()
            
+class BreadthFirstSearch(AStarResources):
+    def __init__(self,values):
+        AStarResources.__init__(self,values, 0)
+        
+        
         
 def Cell_Convert(cellMatrix):
-        #Converts a matrix of cell objects into a matrix of their corresponding values
-        grid = []
-        for cell in cellMatrix:
-            row = []
-            for inner in cell:
-                row.append(inner.value)
-            grid.append(row) 
-        return grid           
+    #Converts a matrix of cell objects into a matrix of their corresponding values
+    grid = []
+    for cell in cellMatrix:
+        row = []
+        for inner in cell:
+            row.append(inner.value)
+        grid.append(row) 
+    return grid           
 
 
 def Move(Matrix,x,y):
@@ -336,7 +347,7 @@ def main():
     gridStore = TestGrids.ImportMatrices()
     Grid = gridStore.TestMaze6
     userInput = None
-    while ValidateInteger(userInput,1,2):
+    while ValidateInteger(userInput,1,3):
         #Chossing a search method
         print()
         print("Please choose an method")
@@ -382,9 +393,39 @@ def main():
             print("The finish could not be found or is inaccessible")
     #---Breadth First---#
     elif userInput == 3:
-        pass
+        Found = False
+        bfs = BreadthFirstSearch(Grid)
+        bfs.listOpen.append(bfs.startingCell)
+        while Found == False:
+            for cell in bfs.listOpen:
+                if cell == bfs.endingCell:
+                    Found = True
+                    break 
+                neighbours = bfs.Get_Neighbours(cell)
+                cell.value = 3
+                cell.visited = True
+                for neighbour in neighbours:
+                    if neighbour.visited == False:     
+                        bfs.listOpen.append(neighbour)
+                bfs.listOpen.remove(cell)
+                
+                
+                        
+                        
+                
+            
+        
+        values = Cell_Convert(bfs.cellMatrix)
+        Display_Result(values)
+        
+        
+        
 
 main()
+
+
+
+
     
     #starttime = time.time()
     #Maze = NewMaze()
